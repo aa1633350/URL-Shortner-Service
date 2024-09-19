@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"math/rand"
@@ -26,9 +27,14 @@ type ShortenRequest struct {
 func main() {
 	r := chi.NewRouter()
 
+	// Add some basic middleware using Chi
+	r.Use(middleware.Logger)                    // Logs every request
+	r.Use(middleware.Recoverer)                 // Recovers from panics
+	r.Use(middleware.Timeout(60 * time.Second)) // Sets a request timeout
+
 	// API Endpoints
 	r.Post("/shorten", shortenURL)
-	r.Get("{/shortenURL}", resolveURL)
+	r.Get("/{shortenURL}", resolveURL)
 
 	fmt.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
